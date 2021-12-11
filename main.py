@@ -1,104 +1,158 @@
-# функция уменьшает число до тех пор пока одно из них не станет нулем
-# практически для этого используется цикл
-def evklidsimply(a,b):
-    while a != 0 and b != 0:
-        if a >= b:
-            a %= b
-        else:
-            b %= a
-    return a or b
+import random
 
-#  функция расширенного евклида
-# ax + by = gcd(a,b)
-# алгоритм находит нод и его линейное представление
+# тест ферма где n число которое проверяется
+# а test_count это количество прогонов
+def ferma(n, test_count):
+    for i in range(test_count):
 
-def evklid_extended(a, b):
-    if a == 0:
-        return (b, 0, 1)
-    else:
-        div, x, y = evklid_extended(b % a, a)
-    return (div, y - (b // a) * x, x)
+        a = random.randint(2, n - 1)
 
-# функция бинарного евклида
-def binary_evklid(a,b):
-    g = 1  # переменная для подсчета
-    # согласно условиям и пунктам задачи мы все делаем
-    # по пунктам
-    while(a % 2 == 0 and b % 2 == 0):
-        a = a/2
-        b = b/2
-        g = 2*g
-    u,v = a,b
-    while u != 0:
-        if u % 2 == 0:
-            u = u/2
-        if v % 2 == 0:
-            v = v/2
-        if u >= v:
-            u = u - v
-        else:
-            v = v - u
-    d = g*v
-    return d
+        if (a ** (n - 1) % n != 1):
+            print("Составное")
+            return False
+    print("Простое")
+    return True
 
-# функция расширенного бинарного евклида
-def evklid_binary_extended(a, b):
-    g = 1 # переменная для подсчетов
-    # выполняем все согласно алгоритму
-    # объяснять даже не надо все по пунктам расписано в условии задачи
-    while (a % 2 == 0 and b % 2 == 0):
-        a = a / 2
-        b = b / 2
-        g = 2 * g
-    u = a
-    v = b
-    A = 1
-    B = 0
-    C = 0
-    D = 1
-    while u != 0:
-        if u % 2 == 0:
-            u = u/2
-            if A % 2 == 0 and B % 2 ==0:
-                A = A/2
-                B = B/2
-            else:
-                A = (A+b)/2
-                B = (B-a)/2
-        if v % 2 == 0:
-            v = v / 2
-            if C%2==0 and D%2==0:
-                C = C/2
-                D = D/2
-            else:
-                C = (C+b)/2
-                D = (D-a)/2
-        if u>=v:
-            u = u - v
-            A = A - C
-            B = B - D
-        else:
-            v = v - u
-            C = C - A
-            D = D - B
-    d = g*v
-    x = C
-    y = D
-    return (d,x,y)
+
+
+# функция для бинарного эксп
+def modulo(base, exponent, mod):
+    x = 1
+    y = base
+    while (exponent > 0):
+        if (exponent % 2 == 1):
+            x = (x * y) % mod
+
+        y = (y * y) % mod
+        exponent = exponent // 2
+
+    return x % mod
+
+
+# нахождение символа якоби
+# алгоритм в принципе расписан в лабе
+
+def calculateJacobian(a, n):
+    if (a == 0):
+        return 0  # (0/n) = 0
+
+    ans = 1
+    if (a < 0):
+
+        # (a/n) = (-a/n)*(-1/n)
+        a = -a
+        if (n % 4 == 3):
+            # (-1/n) = -1 if n = 3 (mod 4)
+            ans = -ans
+
+    if (a == 1):
+        return ans  # (1/n) = 1
+
+    while (a):
+        if (a < 0):
+
+            # (a/n) = (-a/n)*(-1/n)
+            a = -a
+            if (n % 4 == 3):
+                # (-1/n) = -1 if n = 3 (mod 4)
+                ans = -ans
+
+        while (a % 2 == 0):
+            a = a // 2
+            if (n % 8 == 3 or n % 8 == 5):
+                ans = -ans
+
+        # меняем местами
+        a, n = n, a
+
+        if (a % 4 == 3 and n % 4 == 3):
+            ans = -ans
+        a = a % n
+
+        if (a > n // 2):
+            a = a - n
+
+    if (n == 1):
+        return ans
+
+    return 0
+
+
+# тест соловея штрассена, для получения более-менее правильного результата,
+# нужно прогнать его много раз,
+
+def solovoyStrassen(p, iterations):
+    if (p < 2):
+        return False
+    if (p != 2 and p % 2 == 0):
+        return False
+
+    for i in range(iterations):
+
+        # генерация рандомного числа  a
+        a = random.randrange(p - 1) + 1
+        jacobian = (p + calculateJacobian(a, p)) % p
+        mod = modulo(a, (p - 1) / 2, p)
+
+        if (jacobian == 0 or mod != jacobian):
+            return False
+
+    return True
+
+# Алгоритм Миллера Рабина
+# true = значит простое
+# false = значит составное
+def miller_rabin(n):
+    if n != int(n):
+        print("не простое!")
+        return False
+    n = int(n)
+    if n == 0 or n == 1 or n == 4 or n == 6 or n == 8 or n == 9:
+        print("не простое!")
+        return False
+
+    if n == 2 or n == 3 or n == 5 or n == 7:
+        print("простое!")
+        return True
+    s = 0
+    d = n - 1
+    while d % 2 == 0:
+        d >>= 1
+        s += 1
+    assert (2 ** s * d == n - 1)
+
+    def trial_composite(a):
+        if pow(a, d, n) == 1:
+            print("не простое!")
+            return False
+        for i in range(s):
+            if pow(a, 2 ** i * d, n) == n - 1:
+                print("не простое!")
+                return False
+        print("простое!")
+        return True
+
+    for i in range(8):  # number of trials
+        a = random.randrange(2, n)
+        if trial_composite(a):
+            print("не простое!")
+            return False
+    print("простое!")
+    return True
+
 
 def main():
-    # положим числа в переменные
-    a = int(input("Введите числа a"))
-    b = int(input("Введите число b"))
-    if a >= 0 and 0 <= b <= a: # проверяем условия что все в порядке(согласно условиям задачи
-        print("Вызываем функицю Евклида")
-        print(evklidsimply(a,b)) # вызываем функцию простого евклида
-        print("А теперь можно вызвать функцию расширенного")
-        print(evklid_extended(a,b)) # вызываем функцию расширенного евклида
-        print("А теперь функция бинарного Евклида")
-        print(binary_evklid(a,b)) # вызываем функцию бинарного евклида
-        print("А теперь функция расширенного бинарного Евклида")
-        print(evklid_binary_extended(a,b)) # вызываем функцию расширенного бинарного евклида
+    n = int(input("Введите число для ферма"))
+    print("Тест ферма для числа ", n )
+    ferma(n, 500)
+    print("Тест миллера рабина")
+    n = int(input("Введите число для миллера рабина"))
+    miller_rabin(n)
+    n = int(input("Введите число для соловея штрассена"))
+    if (solovoyStrassen(n, 500)):
+        print(n, "простое число ");
+    else:
+        print(n, "составное число");
 
 
 if __name__ == '__main__':
