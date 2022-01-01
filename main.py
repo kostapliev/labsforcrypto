@@ -1,122 +1,157 @@
+import math
+# надо ввести данные сначала
+u = "12345"
+v = "56789"
+b = 10
+n = 5
+# алгоритм 1
+j = n
+k = 0
+
+w = list()
+for i in range(1, n+1):
+    w.append(
+        (int(u[n-i]) + int(v[n-i]) + k) % b
+    )
+
+    k = (int(u[n-i]) + int(v[n-i]) + k)//b
+    j = j - 1
+w.reverse()
+print(w)
+
+# алгоритм 2
+u = "56789"
+v = "12345"
+
+j = n
+k = 0
+w = list()
+for i in range(1, n+1):
+    w.append(
+        (int(u[n-i]) - int(v[n-i]) + k) % b
+    )
+
+    k = (int(u[n-i]) - int(v[n-i]) + k)//b
+    j = j - 1
+w.reverse()
+print(w)
+
+# алгоритм 3
+u = "123456"
+v = "7890"
+n = 6
+m = 4
+
+w = list()
+for i in range(m+n):
+    w.append(0)
+j = m
 
 
-def ext_euclid(a, b):
-    """
-    Extended Euclidean Algorithm
-    :param a:
-    :param b:
-    :return:
-    """
-    if b == 0:
-        return a, 1, 0
+def step6():
+    global j
+    global w
+    j = j - 1
+    if j > 0:
+        step2()
+    if j == 0:
+        print(w)
+
+
+def step2():
+    global v
+    global w
+    global j
+    if j == m:
+        j = j-1
+    if int(v[j]) == 0:
+        w[j] = 0
+        step6()
+
+
+def step4():
+    global k
+    global t
+    global i
+    if i == n:
+        i = i - 1
+    t = int(u[i]) * int(v[j]) + w[i + j] + k
+    w[i + j] = t % b
+    k = t / b
+
+
+def step5():
+    global i
+    global w
+    global j
+    global k
+    i = i - 1
+    if i > 0:
+        step4()
     else:
-        d, xx, yy = ext_euclid(b, a % b)
-        x = yy
-        y = xx - (a // b) * yy
-        return d, x, y
+        w[j] = k
 
 
-def inverse(a, n):
-    """
-    Inverse of a in mod n
-    :param a:
-    :param n:
-    :return:
-    """
-    return ext_euclid(a, n)[1]
+step2()
+i = n
+k = 0
+t = 1
+step4()
+step5()
+step6()
+print(w)
 
 
-def xab(x, a, b, xxx_todo_changeme):
-    """
-    Pollard Step
-    :param x:
-    :param a:
-    :param b:
-    :return:
-    """
-    (G, H, P, Q) = xxx_todo_changeme
-    sub = x % 3 # Subsets
-
-    if sub == 0:
-        x = x*xxx_todo_changeme[0] % xxx_todo_changeme[2]
-        a = (a+1) % Q
-
-    if sub == 1:
-        x = x * xxx_todo_changeme[1] % xxx_todo_changeme[2]
-        b = (b + 1) % xxx_todo_changeme[2]
-
-    if sub == 2:
-        x = x*x % xxx_todo_changeme[2]
-        a = a*2 % xxx_todo_changeme[3]
-        b = b*2 % xxx_todo_changeme[3]
-
-    return x, a, b
+# алгоритм 4
+u4 = "12345"
+n = 5
+v4 = "6789"
+m = 4
+b = 10
+w1 = list()
+for i in range(m+n+2):
+    w1.append(0)
+t1 = 0
+for s1 in range(0, m+n):
+    for i1 in range(0, s1+1):
+        if n-i1>n or m-s1+i1>m or n-i1<0 or m-s1+i1<0 or m-s1+i1-1<0:
+            continue
+        t1 = t1 + (int(u[n-i1-1]) * int(v[m-s1+i1-1]))
+    w1[m+n-s1-1] = t1 % b
+    t1 = math.floor(t1/b)
+print(w1)
 
 
-def pollard(G, H, P):
+# алгоритм 5
+u = "12346789"
+n = 7
+v = "56789"
+t = 4
+b = 10
+q = list()
+for j in range(n-t):
+    q.append(0)
+r = list()
+for j in range(t):
+    r.append(0)
 
-    # P: prime
-    # H:
-    # G: generator
-    Q = int((P - 1) // 2)  # sub group
+while int(u) >= int(v)*(b**(n-t)):
+    q[n-t] = q[n-t] + 1
+    u = int(u) - int(v)*(b**(n-t))
+u = str(u)
+for i in range(n, t+1, -1):
+    v = str(v)
+    u = str(u)
+    if int(u[i]) > int(v[t]):
+        q[i-t-1] = b - 1
+    else:
+        q[i-t-1] = math.floor((int(u[i])*b + int(u[i-1]))/int(v[t]))
 
-
-    x = G*H
-    a = 1
-    b = 1
-
-    X = x
-    A = a
-    B = b
-
-    # Do not use range() here. It makes the algorithm amazingly slow.
-    for i in range(1, P):
-        # Who needs pass-by reference when you have Python!!! ;)
-
-        # Hedgehog
-        x, a, b = xab(x, a, b, (G, H, P, Q))
-
-        # Rabbit
-        X, A, B = xab(X, A, B, (G, H, P, Q))
-        X, A, B = xab(X, A, B, (G, H, P, Q))
-
-        if x == X:
-            break
-
-
-    nom = a-A
-    denom = B-b
-
-    # print nom, denom
-
-    # It is necessary to compute the inverse to properly compute the fraction mod q
-    res = (inverse(denom, Q) * nom) % Q
-
-    # так никто не делает но все же...
-    if verify(G, H, P, res):
-        return res
-
-    return res + Q
-
-
-def verify(g, h, p, x):
-    """
-    Verifies a given set of g, h, p and x
-    :param g: Generator
-    :param h:
-    :param p: Prime
-    :param x: Computed X
-    :return:
-    """
-    return pow(g, x, p) == h
-
-args = [
-    (10, 64, 107),
-]
-
-for arg in args:
-    res = pollard(*arg)
-    print(arg, ': ', res)
-    print("Validates: ", verify(arg[0], arg[1], arg[2], res))
-    print()
-
+    while (int(q[i-t-1])*(int(v[t])*b + int(v[t-1])) > int(u[i])*(b**2) + int(u[i-1])*b + int(u[i-2])):
+        q[i-t-1] = q[i-t-1] - 1
+    u = (int(u) - q[i-t-1]*b**(i-t-1)*int(v))
+    if u < 0:
+        u = int(u) + int(v) *(b**(i-t-1))
+        q[i-t-1] = q[i-t-1] - 1
+r = u
+print(q, r)
